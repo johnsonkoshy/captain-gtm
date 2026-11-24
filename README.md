@@ -28,7 +28,7 @@ All four live in `lib/rules.ts`, and route handlers call them.
 3. **Every lead keeps its source link.** `requireSources` rejects leads with no source, for seed and live data alike.
 4. **Every move records who made it.** `moveStage` needs an actor and sets `movedBy` to `agent`, `rep`, or `agent-rep` (agent drafted, person approved).
 
-The credit gate: enrichment costs 2 credits, a graph query 1, a send 1, from a 60-credit wallet. Handlers return 402 when a step would overdraw it.
+The credit gate: enrichment costs 2 credits, a graph query 1, a send 1, from a 60-credit wallet. Enrichment runs lead by lead until the wallet is empty and pauses the rest; other steps return 402 when they would overdraw it. To show the gate on video, pick **Demo wallet → 8 credits** in the sidebar before Discovery: 4 leads are enriched, 2 wait, then **Top up 20** and **Resume enrichment**.
 
 ## Module layout
 
@@ -59,8 +59,8 @@ docs/architecture.md        query logic, graph shape, agent loop, sponsor servic
 | Tavily | `TAVILY_API_KEY` | Live path written; not tested. Search results are returned alongside the seed leads, so the demo never shows real people. |
 | Hunter | `HUNTER_API_KEY` | Live path written (email verifier); not tested. |
 | Neo4j | `NEO4J_URI/USERNAME/PASSWORD` | Live path written (MERGE plus the warm-intro query); not tested. |
-| Flexprice | `FLEXPRICE_API_KEY` | **Seed only.** Local wallet with a credit gate; the live call is a stub to wire from the official docs. |
-| Band | `BAND_API_KEY` | **Seed only.** Scripted Reviewer post; the live call is a stub to wire from the official SDK docs. |
+| Flexprice | `FLEXPRICE_API_KEY`, `FLEXPRICE_CUSTOMER_ID` | **Sample data.** Sidebar credit meter with a local wallet and a working gate: enrichment stops at 0 credits, the rest of the leads wait as "paused", and a person can top up and resume. Live metering is in our build plan; the calls are in `docs/integrations.md`. |
+| Band | `BAND_API_KEY`, `BAND_ROOM_ID` | **Sample data.** Band-style room on the review screen: the crew posts as it works, the Reviewer @mentions you on an unsourced claim, and your decision (use the fix, edit, or reject) is recorded in the room. Live sync is in our build plan; the calls are in `docs/integrations.md`. |
 | Outbox (not a sponsor) | `SEND_ALLOWLIST`, `RESEND_API_KEY` | Dry-run in-memory outbox; Resend delivery to the allowlist if a key is set. |
 
 `GET /api/status` reports this at runtime. It never returns secrets.
@@ -70,4 +70,4 @@ docs/architecture.md        query logic, graph shape, agent loop, sponsor servic
 - Create the keys in `.env.example` and test each live path.
 - Deploy to Vercel and add the env vars there.
 - Connect Snyk to this repo.
-- Wire the live Flexprice and Band calls from their official docs.
+- Wire the live Flexprice and Band calls (see `docs/integrations.md`).

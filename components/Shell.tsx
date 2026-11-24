@@ -1,7 +1,8 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { ORDER, LABELS, useRun, creditsUsed, hhmm, type Screen } from "./RunProvider";
-import { WALLET, isAgent, actorName } from "@/lib/types";
+import { ORDER, LABELS, useRun, hhmm, type Screen } from "./RunProvider";
+import { CreditMeter } from "./CreditMeter";
+import { isAgent, actorName } from "@/lib/types";
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const { s, go, reset, busy } = useRun();
@@ -9,7 +10,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const here = (path.split("/")[1] || "intake") as Screen;
   const pending = s.ran.drafts ? s.messages.filter((m) => m.status === "draft" || m.status === "edited").length : 0;
   const done: Record<Screen, boolean> = { intake: s.ran.icp, icp: s.ran.discovery, discovery: s.ran.graph, intros: s.ran.drafts, review: s.ran.drafts && pending === 0, pipeline: false };
-  const credits = Math.max(0, WALLET - creditsUsed(s.usage));
 
   return (
     <div className="app">
@@ -35,15 +35,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="credits">
-          <div className="row"><b>Credits</b><span className="muted">metered by Flexprice</span></div>
-          <div className="big"><b>{credits}</b> <span>of {WALLET} left</span></div>
-          <div className="bar" aria-hidden><div style={{ width: `${Math.round((credits / WALLET) * 100)}%` }} /></div>
-          <div className="row"><span>Leads enriched · 2 each</span><b>{s.usage.enriched}</b></div>
-          <div className="row"><span>Graph queries · 1 each</span><b>{s.usage.graphQueries}</b></div>
-          <div className="row"><span>Messages sent · 1 each</span><b>{s.usage.sent}</b></div>
-          <div className="muted small">Enrichment pauses at 0 credits.</div>
-        </div>
+        <CreditMeter />
         <p className="small muted-light">Running on sample data. Every company and person here is made up.</p>
       </aside>
 

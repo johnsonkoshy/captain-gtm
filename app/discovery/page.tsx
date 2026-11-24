@@ -7,7 +7,7 @@ export default function DiscoveryPage() {
   const { s } = useRun();
   if (!s.ran.discovery) return <Empty />;
   const today = s.leads.filter((l) => l.fromThisRun);
-  const verified = today.filter((l) => l.person.emailStatus === "verified").length;
+  const verified = today.filter((l) => l.enrichment !== "paused" && l.person.emailStatus === "verified").length;
   return (
     <section>
       <Head step={3} mod="Module 2" title="Discovery" lede="Accounts and buyers found on public pages, enriched with a work email. Every lead keeps its source." />
@@ -24,7 +24,7 @@ export default function DiscoveryPage() {
             <div key={l.id} className="tr" role="row">
               <div className="stack tight"><b>{l.company.name}</b><span className="muted small">{l.company.domain} · {l.company.size}</span></div>
               <div className="stack tight"><span>{l.person.name}</span><span className="muted small">{l.person.title}</span></div>
-              <div><span className={`status ${l.person.emailStatus === "verified" ? "ok" : "warn"}`}>{l.person.emailStatus}</span></div>
+              <div>{l.enrichment === "paused" ? <span className="status mute" title="The credit gate stopped enrichment before this lead">paused · no credits</span> : <span className={`status ${l.person.emailStatus === "verified" ? "ok" : "warn"}`}>{l.person.emailStatus}</span>}</div>
               <div className="stack tight">
                 <span>{sg.text}</span>
                 <span className="small muted"><a href={sg.source.url} target="_blank" rel="noreferrer">{sg.source.label ?? sg.source.url}</a> · {sg.when}{l.signals.length > 1 ? ` · +${l.signals.length - 1} more` : ""}</span>

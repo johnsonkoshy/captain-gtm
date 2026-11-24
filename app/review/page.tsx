@@ -2,6 +2,7 @@
 import { useRun, hhmm } from "@/components/RunProvider";
 import { Head, Next } from "@/components/Shell";
 import { Empty } from "@/components/Empty";
+import { BandRoom } from "@/components/BandRoom";
 import type { MessageStatus } from "@/lib/types";
 
 const LOOK: Record<MessageStatus, [string, string]> = {
@@ -20,7 +21,6 @@ export default function ReviewPage() {
       reviewText: fixed ? "Resolved: the line about Alex is gone. The other claims match their sources." : m.review.text };
   });
   const sel = view.find((v) => v.m.id === s.sel) ?? view[0];
-  const bandReply = view.some((v) => v.m.review.fix && v.ui.edited && !v.m.body.includes(FLAG));
   const ui = (id: string, patch: Partial<(typeof s.msgUi)[string]>) => update((p) => ({ ...p, msgUi: { ...p.msgUi, [id]: { ...p.msgUi[id], ...patch } } }));
   const save = (id: string) => update((p) => {
     const lead = p.leads.find((l) => l.id === p.messages.find((m) => m.id === id)!.leadId)!;
@@ -46,11 +46,7 @@ export default function ReviewPage() {
               </button>
             ))}
           </div>
-          <div className="card stack tight">
-            <div className="row between"><b>Band room</b><code>#captain-gtm</code></div>
-            {s.room.map((r, i) => <div key={i} className="post"><span className={`chip ${r.kind}`}>{r.who}</span><span>{r.text}</span></div>)}
-            {bandReply && <div className="post"><span className="chip person">You</span><span>Edited. It now says only that we both worked at Meridian Care.</span></div>}
-          </div>
+          <BandRoom />
         </div>
 
         <article className="card stack">

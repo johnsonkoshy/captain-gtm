@@ -4,30 +4,36 @@ import { PRICES, WALLET } from "../types";
 
 /**
  * Flexprice: usage metering and a credit wallet.
- * Seed mode meters against a local 60-credit wallet whose usage the caller reports.
- * Live mode is an explicit stub: wire it from Flexprice's official docs at the event
- * (do not guess endpoints). Until then it behaves like seed mode.
+ *
+ * Today this meters against a local wallet whose usage the client reports (sample data).
+ * The live path is in our build plan. The calls it will make, from Flexprice's official
+ * API reference, are listed in docs/integrations.md (event ingest on POST /v1/events,
+ * real-time balance on GET /v1/wallets/{id}/balance/real-time).
  */
 export const mode = (): AdapterMode => (env.flexpriceKey && env.flexpriceCustomer ? "live" : "seed");
 export const LIVE_IMPLEMENTED = false;
 
 export type Meter = keyof typeof PRICES;
 
-export function balance(usedSoFar: number): number {
-  return Math.max(0, WALLET - usedSoFar);
+export function balance(usedSoFar: number, wallet: number = WALLET): number {
+  return Math.max(0, wallet - usedSoFar);
+}
+
+/** How many units of a meter the balance still covers. */
+export function affordable(meter: Meter, usedSoFar: number, wallet: number = WALLET): number {
+  return Math.floor(balance(usedSoFar, wallet) / PRICES[meter]);
 }
 
 /** Credit gate: throws when the action would overdraw the wallet. */
-export function gate(meter: Meter, units: number, usedSoFar: number) {
+export function gate(meter: Meter, units: number, usedSoFar: number, wallet: number = WALLET) {
   const cost = PRICES[meter] * units;
-  if (balance(usedSoFar) < cost) {
-    throw new CreditError(`Not enough credits for ${meter}: needs ${cost}, ${balance(usedSoFar)} left. Enrichment pauses at 0 credits.`);
+  if (balance(usedSoFar, wallet) < cost) {
+    throw new CreditError(`Not enough credits for ${meter}: needs ${cost}, ${balance(usedSoFar, wallet)} left. Enrichment pauses at 0 credits.`);
   }
   return cost;
 }
 
 export async function record(meter: Meter, units: number): Promise<{ cost: number }> {
-  // TODO(live): send a usage event to Flexprice for env.flexpriceCustomer.
   return { cost: PRICES[meter] * units };
 }
 

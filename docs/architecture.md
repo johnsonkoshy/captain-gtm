@@ -54,6 +54,6 @@ Board 5's shape lists message status as `draft|approved|edited|rejected|sent`. H
 - **Tavily**: search with source links (`lib/adapters/tavily.ts`)
 - **Hunter.io**: email verification (`hunter.ts`)
 - **Neo4j AuraDB**: the graph and the warm-intro query (`neo4j.ts`)
-- **Flexprice**: per-action metering and the credit gate (`flexprice.ts`; the live call is a stub)
-- **Band**: the room where the Reviewer asks a person (`band.ts`; the live call is a stub)
+- **Flexprice**: per-action metering and the credit gate (`flexprice.ts`). Enrichment stops at 0 credits and resumes after a top-up. Sample wallet today; live calls in `docs/integrations.md`
+- **Band**: the room where the Reviewer @mentions a person and the person's decision is recorded (`band.ts`, `components/BandRoom.tsx`). Sample data today; live calls in `docs/integrations.md`
 - **Claude**: the Planner's and Builder's reasoning (`llm.ts`)

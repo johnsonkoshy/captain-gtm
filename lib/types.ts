@@ -38,6 +38,8 @@ export interface Lead {
   movedBy: MovedBy;
   /** true when found in this run, false for earlier-run sample leads */
   fromThisRun: boolean;
+  /** "paused" when the credit gate stopped enrichment before this lead (no email lookup, nothing charged). */
+  enrichment?: "done" | "paused";
 }
 
 export type Channel = "email" | "linkedin";
@@ -89,6 +91,20 @@ export interface Dropped { company: string; why: string }
 /** Credits charged per metered action (Flexprice). */
 export const PRICES = { enrich: 2, graphQuery: 1, send: 1 } as const;
 export const WALLET = 60;
+
+/** A post in the agent room (Band). `mentions` holds the names it @mentions. */
+export interface RoomPost {
+  id: string;
+  who: string;
+  kind: "agent" | "person";
+  text: string;
+  at?: string;
+  mentions?: string[];
+  /** The exact line the post is about, with why it was flagged. */
+  quote?: { text: string; note: string };
+  /** The post asks a person to decide; the room shows a decision card under it. */
+  decision?: { messageId: string };
+}
 
 export const isAgent = (a: Actor) => a.startsWith("agent:");
 export const isPerson = (a: Actor) => a.startsWith("person:");

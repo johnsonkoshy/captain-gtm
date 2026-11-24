@@ -3,20 +3,20 @@ import { leads, messages as seedMessages } from "@/seed";
 import { moveStage, pickTeammateRecipient, requirePersonApproval, RuleError } from "@/lib/rules";
 import * as mailer from "@/lib/adapters/mailer";
 import * as flexprice from "@/lib/adapters/flexprice";
-import type { Event } from "@/lib/types";
+import { WALLET, type Event } from "@/lib/types";
 
 /**
  * The only path to the mailer. Body: { messageId, subject, body, decidedBy, used }.
  * Any `to` in the request is ignored: the recipient comes from SEND_ALLOWLIST.
  */
 export async function POST(req: Request) {
-  const b = (await req.json().catch(() => ({}))) as { messageId?: string; subject?: string; body?: string; decidedBy?: unknown; used?: number };
+  const b = (await req.json().catch(() => ({}))) as { messageId?: string; subject?: string; body?: string; decidedBy?: unknown; used?: number; wallet?: number };
   try {
     requirePersonApproval(b.decidedBy);
     const msg = seedMessages.find((m) => m.id === b.messageId);
     const lead = msg && leads.find((l) => l.id === msg.leadId);
     if (!msg || !lead) return NextResponse.json({ error: "unknown message" }, { status: 404 });
-    const cost = flexprice.gate("send", 1, Number(b.used ?? 0));
+    const cost = flexprice.gate("send", 1, Number(b.used ?? 0), Number(b.wallet ?? WALLET));
     const to = pickTeammateRecipient(lead);
     const item = await mailer.deliver(to, b.subject ?? msg.subject, b.body ?? msg.body);
     await flexprice.record("send", 1);

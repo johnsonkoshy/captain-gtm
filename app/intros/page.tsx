@@ -2,6 +2,7 @@
 import { useRun } from "@/components/RunProvider";
 import { Head, Next } from "@/components/Shell";
 import { Empty } from "@/components/Empty";
+import { ServiceTag } from "@/components/ServiceTag";
 
 const Arrow = ({ up }: { up?: boolean }) => (
   <svg aria-hidden width="10" height="40" viewBox="0 0 10 40">
@@ -9,30 +10,31 @@ const Arrow = ({ up }: { up?: boolean }) => (
         : <><path d="M5 0 L5 31" stroke="#10243c" strokeWidth="2" /><path d="M0 30 L5 40 L10 30 Z" fill="#10243c" /></>}
   </svg>
 );
-const Node = ({ kind, name, sub }: { kind: string; name: string; sub: string }) => (
-  <div className="node"><span className="eyebrow">{kind}</span><div className="stack tight"><b>{name}</b><span className="muted small">{sub}</span></div></div>
+const Node = ({ kind, name, sub, cls = "" }: { kind: string; name: string; sub: string; cls?: string }) => (
+  <div className={`node ${cls}`}><span className="eyebrow">{kind}</span><div className="stack tight"><b>{name}</b><span className="muted small">{sub}</span></div></div>
 );
 
 export default function IntrosPage() {
   const { s } = useRun();
-  if (!s.ran.graph) return <Empty />;
+  if (!s.ran.graph) return <Empty step="intros" />;
   const p = s.paths[0];
   const lead = p && s.leads.find((l) => l.id === p.leadId);
   return (
     <section>
-      <Head step={4} mod="Module 3" title="Warm intros" lede="One multi-hop query finds someone on your team who shares a past employer with a buyer." />
+      <Head step={4} mod="Module 3" title="Warm intros" lede="One multi-hop query finds someone on your team who shares a past employer with a buyer."
+        tags={<><span className="chip agent">Builder</span><ServiceTag svc="neo4j" name="Neo4j AuraDB" /></>} />
       <div className="grid2">
         <div className="card stack">
           {p && lead ? (
             <>
-              <b>The path to {p.company}</b>
-              <Node kind="Person" name={p.teammate} sub="On your team" />
+              <div className="card-title"><b>The path to {p.company}</b><span className="status ok">1 warm path</span></div>
+              <Node kind="Person" name={p.teammate} sub="On your team" cls="you" />
               <div className="edge"><Arrow /><code>previously_employed_at</code></div>
               <Node kind="Company" name={p.pastEmployer} sub="Shared past employer" />
               <div className="edge"><Arrow up /><code>previously_employed_at</code></div>
               <Node kind="Person" name={p.buyer} sub={`${lead.person.title} · fit ${lead.fit}, tier ${lead.tier}`} />
               <div className="edge"><Arrow /><code>works_at</code></div>
-              <Node kind="Company" name={p.company} sub={`${lead.company.domain} · today's lead`} />
+              <Node kind="Company" name={p.company} sub={`${lead.company.domain} · today's lead`} cls="target" />
             </>
           ) : <span className="muted">No warm paths found.</span>}
         </div>

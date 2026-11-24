@@ -55,6 +55,9 @@ const KEY = "captain-gtm-run";
 const hhmm = (iso: string) => { const d = new Date(iso); return isNaN(+d) ? iso : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
 export { hhmm };
 
+// Seed mode answers instantly. A short beat lets the Agent Thinking feed show who is working (pacing only).
+const beat = (ms = 650) => new Promise((r) => setTimeout(r, ms));
+
 async function post<T>(url: string, body: unknown): Promise<T> {
   const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const j = await r.json();
@@ -62,9 +65,12 @@ async function post<T>(url: string, body: unknown): Promise<T> {
   return j as T;
 }
 
+export interface Thinking { actor: Event["actor"]; text: string }
+
 interface Ctx {
   s: RunState;
   busy: boolean;
+  thinking: Thinking | null;
   update: (f: (s: RunState) => RunState) => void;
   go: (target: Screen) => Promise<void>;
   reset: () => void;
@@ -82,6 +88,7 @@ export const useRun = () => { const c = useContext(RunCtx); if (!c) throw new Er
 export function RunProvider({ children }: { children: React.ReactNode }) {
   const [s, setS] = useState<RunState>(fresh);
   const [busy, setBusy] = useState(false);
+  const [thinking, setThinking] = useState<Thinking | null>(null);
   const ref = useRef(s);
   ref.current = s;
   const router = useRouter();
@@ -99,12 +106,14 @@ export function RunProvider({ children }: { children: React.ReactNode }) {
       let st = { ...ref.current, error: "" };
       const used = () => creditsUsed(st.usage);
       if (ti >= 1 && !st.ran.icp) {
+        setThinking({ actor: "agent:planner", text: "Reading the intake and drafting the ICP" }); await beat();
         const r = await post<{ icp: ICP; events: Event[] }>("/api/run/icp", { intake: st.intake });
         const exp: Record<string, ExpState> = {};
         r.icp.expansions.forEach((e) => (exp[e.id] = { status: e.status, text: e.segment, editing: false }));
         st = { ...st, icp: r.icp, exp, events: [...st.events, ...r.events], ran: { ...st.ran, icp: true } };
       }
       if (ti >= 2 && !st.ran.discovery) {
+        setThinking({ actor: "agent:builder", text: "Searching public pages and enriching contacts" }); await beat(900);
         const r = await post<{ leads: Lead[]; dropped: Dropped[]; competitors: Competitor[]; graphShape: RunState["graphShape"]; events: Event[]; enriched: number }>("/api/run/discovery", { icp: st.icp, used: used(), wallet: st.wallet });
         st = {
           ...st, leads: [...r.leads, ...earlierLeads], dropped: r.dropped, competitors: r.competitors, graphShape: r.graphShape,
@@ -113,10 +122,12 @@ export function RunProvider({ children }: { children: React.ReactNode }) {
         };
       }
       if (ti >= 3 && !st.ran.graph) {
+        setThinking({ actor: "agent:builder", text: "Querying the graph for shared past employers" }); await beat();
         const r = await post<{ paths: WarmPath[]; query: string; graphShape: RunState["graphShape"]; events: Event[] }>("/api/run/graph", { leads: st.leads.filter((l) => l.fromThisRun), used: used(), wallet: st.wallet });
         st = { ...st, paths: r.paths, query: r.query, graphShape: r.graphShape, events: [...st.events, ...r.events], usage: { ...st.usage, graphQueries: st.usage.graphQueries + 1 }, ran: { ...st.ran, graph: true } };
       }
       if (ti >= 4 && !st.ran.drafts) {
+        setThinking({ actor: "agent:builder", text: "Drafting first touches; the Reviewer checks each claim" }); await beat(900);
         const r = await post<{ messages: Message[]; room: RoomPost[]; events: Event[] }>("/api/run/drafts", { leads: st.leads });
         const msgUi: Record<string, MsgUi> = {};
         r.messages.forEach((m) => (msgUi[m.id] = { editing: false, draft: "", edited: false }));
@@ -126,7 +137,7 @@ export function RunProvider({ children }: { children: React.ReactNode }) {
       router.push(`/${target}`);
     } catch (e) {
       update((p) => ({ ...p, error: (e as Error).message }));
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setThinking(null); }
   }, [router, update]);
 
   const nextOpen = (st: RunState, after: string) => st.messages.find((m) => m.id !== after && (m.status === "draft" || m.status === "edited"))?.id ?? after;
@@ -209,7 +220,7 @@ export function RunProvider({ children }: { children: React.ReactNode }) {
 
   const reset = useCallback(() => { setS(fresh()); router.push("/intake"); }, [router]);
 
-  return <RunCtx.Provider value={{ s, busy, update, go, reset, approve, reject, log, topUp, setWallet, resumeEnrichment, decideInRoom }}>{children}</RunCtx.Provider>;
+  return <RunCtx.Provider value={{ s, busy, thinking, update, go, reset, approve, reject, log, topUp, setWallet, resumeEnrichment, decideInRoom }}>{children}</RunCtx.Provider>;
 }
 
 export { earlierMoves };

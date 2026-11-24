@@ -2,12 +2,13 @@
 import { useRun } from "@/components/RunProvider";
 import { Head, Next } from "@/components/Shell";
 import { Empty } from "@/components/Empty";
+import { ServiceTag } from "@/components/ServiceTag";
 
 const LOOK = { accepted: ["Accepted", "ok"], adjusted: ["Adjusted", "info"], dismissed: ["Dismissed", "mute"] } as const;
 
 export default function IcpPage() {
   const { s, update, log } = useRun();
-  if (!s.icp) return <Empty />;
+  if (!s.icp) return <Empty step="icp" />;
   const groups = [
     { name: "Industries", key: "industries[]", items: s.icp.industries },
     { name: "Company size", key: "sizeBands[]", items: s.icp.sizeBands },
@@ -23,13 +24,14 @@ export default function IcpPage() {
 
   return (
     <section>
-      <Head step={2} mod="Module 1" title="Ideal customer profile" lede="Drafted by the Planner from your intake. Each number is the Planner's confidence in that field, from 0.00 to 1.00." />
+      <Head step={2} mod="Module 1" title="Ideal customer profile" lede="Drafted by the Planner from your intake. Each number is the Planner's confidence in that field, from 0.00 to 1.00."
+        tags={<><span className="chip agent">Planner</span><ServiceTag svc="llm" name="Claude" /></>} />
       <div className="grid2">
         {groups.map((g) => (
           <div key={g.name} className="card">
-            <div className="row between"><b>{g.name}</b><code>{g.key}</code></div>
+            <div className="card-title" style={{ marginBottom: 6 }}><b>{g.name}</b><code className="muted small">{g.key}</code></div>
             {g.items.map((it) => (
-              <div key={it.label} className="conf">
+              <div key={it.label} className={`conf ${it.confidence >= 0.75 ? "hi" : it.confidence < 0.6 ? "lo" : ""}`}>
                 <span>{it.label}</span>
                 <span className="meter" aria-hidden><span style={{ width: `${Math.round(it.confidence * 100)}%` }} /></span>
                 <span className="mono">{it.confidence.toFixed(2)}</span>
@@ -39,7 +41,7 @@ export default function IcpPage() {
         ))}
       </div>
       <div className="card stack">
-        <div className="row between"><b>Expansion segments the Planner suggests</b><span className="muted">Accept, adjust or dismiss each one</span></div>
+        <div className="card-title"><b>Expansion segments the Planner suggests</b><span className="muted small">Accept, adjust or dismiss each one</span></div>
         {s.icp.expansions.map((e) => {
           const st = s.exp[e.id];
           return (
@@ -50,12 +52,12 @@ export default function IcpPage() {
               </div>
               {st.status === "suggested" && !st.editing && (
                 <div className="row gap">
-                  <button className="btn" onClick={() => decide(e.id, "accepted")}>Accept</button>
+                  <button className="btn primary" onClick={() => decide(e.id, "accepted")}>Accept</button>
                   <button className="btn" onClick={() => patch(e.id, { editing: true })}>Adjust</button>
                   <button className="btn ghost" onClick={() => decide(e.id, "dismissed")}>Dismiss</button>
                 </div>
               )}
-              {st.editing && <button className="btn" onClick={() => decide(e.id, "adjusted")}>Save segment</button>}
+              {st.editing && <button className="btn primary" onClick={() => decide(e.id, "adjusted")}>Save segment</button>}
               {st.status !== "suggested" && <span className={`status ${LOOK[st.status][1]}`}>{LOOK[st.status][0]}</span>}
             </div>
           );

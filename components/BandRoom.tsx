@@ -1,5 +1,6 @@
 "use client";
 import { Fragment, useEffect, useRef } from "react";
+import { ServiceTag } from "./ServiceTag";
 import { useRun, hhmm, type RoomChoice, type RoomPost } from "./RunProvider";
 
 const FLAG = "suggested I reach out";
@@ -100,7 +101,7 @@ export function BandRoom() {
           </div>
         ))}
       </div>
-      <footer className="small muted roomfoot">Sample data · live Band sync in our build plan</footer>
+      <footer className="small muted roomfoot row between"><span>Sample data</span><ServiceTag svc="band" name="Band" /></footer>
     </div>
   );
 }

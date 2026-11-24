@@ -17,7 +17,10 @@ With no keys, the whole demo runs on fictional seed data. Other scripts:
 ```bash
 npm run build        # production build
 npm run check:seed   # fails if seed/ has any non-.example domain
+node scripts/demo-screens.cjs   # with the dev server running: clicks the demo story, saves docs/screenshots/*.png (needs Playwright)
 ```
+
+Screenshots of every step of the demo story are in [docs/screenshots](docs/screenshots). Each screen carries honesty tags: "Prototype · sample data" on every screen, "<service> · sample data" for adapters that have a live path but no key, and "In our build plan" for Flexprice and Band until they are wired. The tags read `/api/status`, so they switch to "live" on their own once a key is set and the adapter runs.
 
 ## Rules the code enforces
 

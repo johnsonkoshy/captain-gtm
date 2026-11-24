@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRun, creditsUsed } from "./RunProvider";
 import { PRICES } from "@/lib/types";
+import { ServiceTag } from "./ServiceTag";
 
 /** Counts from the previous value to the new one, so a charge reads as a tick-down on video. */
 function useTween(value: number, ms = 700) {
@@ -117,7 +118,7 @@ export function CreditMeter() {
       )}
 
       <div className="cfoot">
-        <span className="small muted">Sample wallet · live Flexprice metering in our build plan</span>
+        <div className="row between"><span className="small muted">Sample wallet</span><ServiceTag svc="flexprice" name="Flexprice" /></div>
         {!s.ran.discovery && (
           <details className="demo">
             <summary>Demo wallet</summary>

@@ -1,19 +1,19 @@
 import "server-only";
 import { env, type AdapterMode } from "../env";
+import type { RoomPost } from "../types";
 
 /**
- * Band: the room where agents and people talk. Seed mode returns the scripted
- * Reviewer question. Live mode is an explicit stub: Band's SDK is so far known only
- * from third-party listings, so wire it from Band's official docs at the event.
+ * Band: the room where agents and people talk. Today the room runs on sample data.
+ * The live path is in our build plan; the Agent API calls it will make (post a message
+ * with mentions, read replies) are listed in docs/integrations.md.
  */
 export const mode = (): AdapterMode => (env.bandKey && env.bandRoom ? "live" : "seed");
 export const LIVE_IMPLEMENTED = false;
 
-export interface RoomPost { who: string; kind: "agent" | "person"; text: string }
+export type { RoomPost };
 
 export async function post(p: RoomPost): Promise<RoomPost> {
-  // TODO(live): post p to env.bandRoom with the official Band SDK.
-  return p;
+  return { ...p, at: p.at ?? new Date().toISOString() };
 }
 
 export const ROOM = "#captain-gtm";

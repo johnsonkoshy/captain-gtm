@@ -7,7 +7,7 @@ The app is a Next.js App Router project. **Run state lives in the client** (`Run
 ## Query logic
 
 1. **ICP** (`/api/run/icp`): the Planner (LLM adapter) turns the intake into `ICP`: industries, size bands, personas, triggers, a 0–1 confidence per field, and suggested expansion segments. A person accepts, adjusts or dismisses each segment.
-2. **Discovery** (`/api/run/discovery`): the Builder searches public pages (Tavily) once per trigger event and keeps only hits that have a URL. Leads with negative signals (hiring freeze, acquisition) are dropped and listed with the reason. Fit (0–100) and tier (A/B/C) rank the rest. Hunter verifies the work email. The Flexprice gate charges 2 credits per lead before enrichment.
+2. **Discovery** (`/api/run/discovery`): the Builder searches public pages (Tavily) once per trigger event and keeps only hits that have a URL. Leads with negative signals (hiring freeze, acquisition) are dropped and listed with the reason. Fit (0–100) and tier (A/B/C) rank the rest. Fit is the sum of named parts (trigger or segment match, sourced evidence, buyer persona match, email status, minus penalties such as a stale signal), stored on each lead as `fitParts` so the Discovery screen can show why. Tier: A at 80+, B at 65–79, C below 65 (`tierFor` in `lib/types.ts`). Hunter verifies the work email. The Flexprice gate charges 2 credits per lead before enrichment.
 3. **Warm intros** (`/api/run/graph`): one multi-hop Cypher query, at 1 credit:
 
 ```cypher
@@ -54,6 +54,6 @@ Board 5's shape lists message status as `draft|approved|edited|rejected|sent`. H
 - **Tavily**: search with source links (`lib/adapters/tavily.ts`)
 - **Hunter.io**: email verification (`hunter.ts`)
 - **Neo4j AuraDB**: the graph and the warm-intro query (`neo4j.ts`)
-- **Flexprice**: per-action metering and the credit gate (`flexprice.ts`; the live call is a stub)
-- **Band**: the room where the Reviewer asks a person (`band.ts`; the live call is a stub)
+- **Flexprice**: per-action metering and the credit gate (`flexprice.ts`). Enrichment stops at 0 credits and resumes after a top-up. Sample wallet today; live calls in `docs/integrations.md`
+- **Band**: the room where the Reviewer @mentions a person and the person's decision is recorded (`band.ts`, `components/BandRoom.tsx`). Sample data today; live calls in `docs/integrations.md`
 - **Claude**: the Planner's and Builder's reasoning (`llm.ts`)

@@ -34,8 +34,23 @@ const lead = (
   id,
   company: { name, domain, size, sources: signals.map((s) => s.source) },
   person: { name: person, title, email: `${person.split(" ")[0].toLowerCase()}@${domain}`, emailStatus },
-  signals, fit, tier, stage, movedBy, fromThisRun,
+  signals, fit, tier, stage, movedBy, fromThisRun, fitParts: FIT[id],
 });
+
+/** Fit breakdowns: each lead's parts sum to its fit score. */
+const fp = (...parts: [string, number][]) => parts.map(([label, points]) => ({ label, points }));
+const FIT: Record<string, ReturnType<typeof fp>> = {
+  tidewater: fp(["Trigger: hiring a first AI or platform engineer (0.79)", 32], ["2 sourced signals, both under a month old", 16], ["Buyer matches persona: Head of Engineering", 20], ["Work email verified", 20]),
+  brightkeel: fp(["Segment: regulated team that signs off AI output", 30], ["2 sourced signals, one under 6 months", 13], ["Buyer matches persona: COO", 20], ["Work email verified", 20]),
+  fernpoint: fp(["Trigger: runs operations with AI", 28], ["1 sourced signal", 8], ["Buyer matches persona: operations lead", 20], ["Work email verified", 20], ["Signal is 14 months old", -4]),
+  saltmarsh: fp(["Trigger: announced an agent pilot (0.71)", 28], ["1 sourced signal, 5 weeks old", 8], ["Buyer matches persona: Head of Engineering", 20], ["Work email unverified", 8], ["Size in the 2–20 band", 6]),
+  kestrel: fp(["Trigger: runs a small team with agents", 24], ["1 sourced signal", 8], ["Buyer matches persona: Founder", 20], ["Work email verified", 20], ["Solo-founder segment, least able to pay", -6]),
+  pinecrest: fp(["Trigger: hiring an AI coordinator (partial match)", 18], ["1 sourced signal", 8], ["Buyer partly matches persona: Director of Operations", 12], ["Work email verified", 20], ["85 people, outside the core size band", -4]),
+  harborlight: fp(["Trigger: hiring a first platform engineer (0.79)", 32], ["1 sourced signal", 8], ["Buyer matches persona: Founder and CEO", 20], ["Work email verified", 20]),
+  larkspur: fp(["Segment: agency running client work with agents", 26], ["1 sourced signal", 8], ["Buyer matches persona: Founder", 20], ["Work email verified", 20]),
+  quillstone: fp(["Segment: regulated team that signs off AI output", 26], ["1 sourced signal", 8], ["Buyer near persona: CTO", 15], ["Work email verified", 20]),
+  corvid: fp(["Trigger: building agent tooling in-house", 24], ["1 sourced signal", 8], ["Buyer outside personas: Head of Product", 9], ["Work email verified", 20]),
+};
 
 export const leads: Lead[] = [
   lead("tidewater", "Tidewater Analytics", "tidewater.example", "38 people", "Maya Okafor", "Head of Engineering", "verified", 88, "A", "Matched", "agent", true,
@@ -50,7 +65,7 @@ export const leads: Lead[] = [
     [sig("Founder talk on running a small team with agents", "2 months ago", "kestrel.example/talks")]),
   lead("pinecrest", "Pinecrest Clinics", "pinecrest.example", "85 people", "Elena Ruiz", "Director of Operations", "verified", 54, "C", "Matched", "agent", true,
     [sig("Hiring an AI program coordinator", "1 month ago", "pinecrest.example/jobs")]),
-  lead("harborlight", "Harborlight Robotics", "harborlight.example", "30 people", "Tomás Reyes", "Founder and CEO", "verified", 79, "A", "Meeting Booked", "rep", false,
+  lead("harborlight", "Harborlight Robotics", "harborlight.example", "30 people", "Tomás Reyes", "Founder and CEO", "verified", 80, "A", "Meeting Booked", "rep", false,
     [sig("Hiring a first platform engineer", "earlier run", "harborlight.example/jobs")]),
   lead("larkspur", "Larkspur Studio", "larkspur.example", "12 people", "Ines Duarte", "Founder", "verified", 74, "B", "Replied", "rep", false,
     [sig("Client builds with AI agents", "earlier run", "larkspur.example/services")]),

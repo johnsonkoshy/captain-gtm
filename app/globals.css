@@ -208,8 +208,8 @@ nav { display: flex; flex-direction: column; gap: 2px; }
 .room { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 .roomhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--paper); background: #fff; }
 .hash { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--navy); color: var(--amber); font-weight: 800; font-size: 13px; }
-.needs { font-size: 11px; font-weight: 700; background: var(--amber); color: var(--navy); border-radius: 999px; padding: 1px 8px; animation: pulse 1.8s ease-in-out infinite; }
-@keyframes pulse { 50% { box-shadow: 0 0 0 4px rgba(244,163,55,.25); } }
+.needs { font-size: 11px; font-weight: 700; background: var(--amber); color: var(--navy); border-radius: 999px; padding: 1px 8px; animation: needpulse 1.8s ease-in-out infinite; }
+@keyframes needpulse { 50% { box-shadow: 0 0 0 4px rgba(244,163,55,.25); } }
 .avatars { display: flex; } .avatars > span { margin-left: -6px; } .avatars > span:first-child { margin-left: 0; }
 .avatar { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 12px; border: 2px solid #fff; flex: none; }
 .avatar.agent { background: var(--amber); color: var(--navy); }

@@ -41,9 +41,9 @@ function useDelta(value: number) {
 }
 
 const METERS = [
-  { key: "enriched", label: "Leads enriched", price: PRICES.enrich, cls: "m-enrich" },
+  { key: "enriched", label: "Enrichments", price: PRICES.enrich, cls: "m-enrich" },
   { key: "graphQueries", label: "Graph queries", price: PRICES.graphQuery, cls: "m-graph" },
-  { key: "sent", label: "Messages sent", price: PRICES.send, cls: "m-send" },
+  { key: "sent", label: "Sends", price: PRICES.send, cls: "m-send" },
 ] as const;
 
 export function CreditMeter() {
@@ -58,7 +58,7 @@ export function CreditMeter() {
   const pct = (n: number) => `${s.wallet ? (n / s.wallet) * 100 : 0}%`;
 
   return (
-    <section className={`credits ${state}`} aria-label="Credits">
+    <section className={`credits is-${state}`} aria-label="Credits">
       <div className="row between">
         <b>Credits</b>
         <span className={`cstate ${state}`}>
@@ -118,7 +118,8 @@ export function CreditMeter() {
       )}
 
       <div className="cfoot">
-        <div className="row between"><span className="small muted">Sample wallet</span><ServiceTag svc="flexprice" name="Flexprice" /></div>
+        <ServiceTag svc="flexprice" name="Flexprice" />
+        <span className="small muted">Sample wallet, metered in this app.</span>
         {!s.ran.discovery && (
           <details className="demo">
             <summary>Demo wallet</summary>

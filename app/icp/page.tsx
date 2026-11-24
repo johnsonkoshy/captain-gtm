@@ -41,7 +41,13 @@ export default function IcpPage() {
         ))}
       </div>
       <div className="card stack">
-        <div className="card-title"><b>Expansion segments the Planner suggests</b><span className="muted small">Accept, adjust or dismiss each one</span></div>
+        <div className="row between wrap gap">
+          <div className="stack tight">
+            <span className="eyebrow amber">Expansion segments</span>
+            <b>Where else Captain could sell, beyond the core ICP</b>
+          </div>
+          <span className="pill">{Object.values(s.exp).filter((x) => x.status !== "suggested").length} of {s.icp.expansions.length} reviewed · you decide each one</span>
+        </div>
         {s.icp.expansions.map((e) => {
           const st = s.exp[e.id];
           return (
